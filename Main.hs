@@ -1,8 +1,5 @@
-{-# OPTIONS_GHC -Wno-missing-fields #-}
-module Main where
 
-import Data.List
-import Data.Array
+module Main where
 
 -- Tipo de dado Rodada
 data Rodada = Rodada {
