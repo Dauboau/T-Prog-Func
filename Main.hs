@@ -50,7 +50,7 @@ main = do
   -- Transforma o input em um array
   let pontos = map read (words input) :: [Int]
 
-  -- Dividi o input em rodadas
+  -- Dividi o array de pontos em rodadas
   let rodadas = splitRodadas (pontos,1)
 
   -- Gera o output e junta aos pontos
