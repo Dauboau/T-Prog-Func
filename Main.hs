@@ -4,6 +4,7 @@ module Main where
 import Data.List
 import Data.Array
 
+-- Tipo de dado Rodada
 data Rodada = Rodada {
   i :: Int
   , jogada1 :: Int
@@ -26,18 +27,19 @@ splitRodadas (h:t,i)
 somaPontos :: [Rodada] -> Int
 somaPontos = foldr ((+) . pontos) 0
 
+-- Retorna uma string com a pontuação do jogo na formatação adequada
 rodadasToString :: [Rodada] -> String
 rodadasToString [] = []
 rodadasToString (h:t)
-  | i h == 10 && jogada1 h == 10 && jogada2 h == 10 && jogada3 h == 10 = "X" ++ " " ++ "X" ++ " " ++ "X" ++ " | "
-  | i h == 10 && jogada1 h == 10 && jogada2 h == 10 = "X" ++ " " ++ "X" ++ " " ++ show (jogada3 h) ++ " | "
-  | i h == 10 && jogada1 h == 10 && jogada2 h + jogada3 h == 10 = "X" ++ " " ++ show (jogada2 h) ++ " /" ++ " | "
-  | i h == 10 && jogada1 h == 10 = "X" ++ " " ++ show (jogada2 h) ++ " " ++ show (jogada3 h) ++ " | "
-  | i h == 10 && jogada1 h + jogada2 h == 10 && jogada3 h == 10 = show (jogada1 h) ++ " /" ++ " " ++ "X" ++ " | "
-  | i h == 10 && jogada1 h + jogada2 h == 10 = show (jogada1 h) ++ " /" ++ " " ++ show (jogada3 h) ++ " | "
-  | jogada1 h == 10 = "X _" ++ " | " ++ rodadasToString t
-  | jogada1 h + jogada2 h == 10 = show (jogada1 h) ++ " /" ++ " | " ++ rodadasToString t
-  | otherwise = show (jogada1 h) ++ " " ++ show (jogada2 h) ++ " | " ++ rodadasToString t
+  | i h == 10 && jogada1 h == 10 && jogada2 h == 10 && jogada3 h == 10 = "X" ++ " " ++ "X" ++ " " ++ "X" ++ " | " -- última rodada, 3 strikes consecutivos
+  | i h == 10 && jogada1 h == 10 && jogada2 h == 10 = "X" ++ " " ++ "X" ++ " " ++ show (jogada3 h) ++ " | " -- última rodada, 2 strikes consecutivos
+  | i h == 10 && jogada1 h == 10 && jogada2 h + jogada3 h == 10 = "X" ++ " " ++ show (jogada2 h) ++ " /" ++ " | " -- última rodada, 1 strike seguido de spare
+  | i h == 10 && jogada1 h == 10 = "X" ++ " " ++ show (jogada2 h) ++ " " ++ show (jogada3 h) ++ " | " -- última rodada, 1 strike
+  | i h == 10 && jogada1 h + jogada2 h == 10 && jogada3 h == 10 = show (jogada1 h) ++ " /" ++ " " ++ "X" ++ " | " -- última rodada, 1 spare seguido de strike
+  | i h == 10 && jogada1 h + jogada2 h == 10 = show (jogada1 h) ++ " /" ++ " " ++ show (jogada3 h) ++ " | " -- última rodada, 1 spare
+  | jogada1 h == 10 = "X _" ++ " | " ++ rodadasToString t -- strike
+  | jogada1 h + jogada2 h == 10 = show (jogada1 h) ++ " /" ++ " | " ++ rodadasToString t -- spare
+  | otherwise = show (jogada1 h) ++ " " ++ show (jogada2 h) ++ " | " ++ rodadasToString t -- normal
 
 -- main é uma função imperativa
 main = do
