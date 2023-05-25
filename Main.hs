@@ -31,6 +31,7 @@ rodadasToString [] = []
 rodadasToString (h:t)
   | i h == 10 && jogada1 h == 10 && jogada2 h == 10 && jogada3 h == 10 = "X" ++ " " ++ "X" ++ " " ++ "X" ++ " | "
   | i h == 10 && jogada1 h == 10 && jogada2 h == 10 = "X" ++ " " ++ "X" ++ " " ++ show (jogada3 h) ++ " | "
+  | i h == 10 && jogada1 h == 10 && jogada2 h + jogada3 h == 10 = "X" ++ " " ++ show (jogada2 h) ++ " /" ++ " | "
   | i h == 10 && jogada1 h == 10 = "X" ++ " " ++ show (jogada2 h) ++ " " ++ show (jogada3 h) ++ " | "
   | i h == 10 && jogada1 h + jogada2 h == 10 && jogada3 h == 10 = show (jogada1 h) ++ " /" ++ " " ++ "X" ++ " | "
   | i h == 10 && jogada1 h + jogada2 h == 10 = show (jogada1 h) ++ " /" ++ " " ++ show (jogada3 h) ++ " | "
