@@ -1,74 +1,42 @@
+{-# OPTIONS_GHC -Wno-missing-fields #-}
 module Main where
 
 import Data.List
 import Data.Array
 
-type Par = (Int,Int)
+data Rodada = Rodada {
+  i :: Int
+  , jogada1 :: Int
+  , jogada2 :: Int
+  , jogada3 :: Int
+  , pontos :: Int
+}
+  deriving (Show)
 
--- Separa as rodadas em pares
-splitPares :: [Int] -> [Par]
-splitPares = unfoldr f
-  where
-    f [] = Nothing -- ignorar lista vazia
-    f (10:xs) = Just ((10,0), xs) -- strike não tem par
-    f [x] = Just ((x, -1), []) -- último elemento não tem par
-    f (x:y:xs) = Just ((x, y), xs) -- par tradicional
+-- Separa as rodadas em um array
+splitRodadas :: ([Int],Int) -> [Rodada]
+splitRodadas (h:t,i)
+  | i == 10 && length t == 2 = [Rodada{i=i,jogada1 = h,jogada2 = head t,jogada3 = head (tail t),pontos = h + head t + head (tail t)}] -- última rodada (tripla)
+  | i == 10 = [Rodada{i=i,jogada1 = h,jogada2 = head t,jogada3 = -1,pontos = h + head t}] -- última rodada (dupla)
+  | h == 10 = Rodada{i=i,jogada1 = h,jogada2 = -1,jogada3 = -1,pontos = h + head t + head (tail t)}:splitRodadas (t,i+1) -- strike
+  | h + head t == 10 = Rodada{i=i,jogada1 = h,jogada2 = head t,jogada3 = -1,pontos = h + head t + head (tail t)}:splitRodadas (tail t,i+1) -- spare
+  | otherwise = Rodada{i=i,jogada1 = h,jogada2 = head t,jogada3 = -1,pontos = h + head t}:splitRodadas (tail t,i+1) -- normal
 
--- Descobre o símbolo padrão do par
-getSymbol :: Par -> String
-getSymbol (x, y)
-  | x == 10 = "X _" -- strike
-  | x + y == 10 = show x ++ " /" -- spare
-  | otherwise = show x ++ " " ++ show y -- par tradicional
+-- Retorna a pontuação da partida
+somaPontos :: [Rodada] -> Int
+somaPontos = foldr ((+) . pontos) 0
 
--- Descobre o símbolo do trio final de pares
-getEndSymbol :: (Par,Par,Par) -> String
-getEndSymbol((x,y),(a,b),(c,d))
-  | tipoPar(c,d) == -1 = getSymbol (x,y) ++ " | " ++ getSymbol (a,b) ++ " " ++ show c
-  | tipoPar(x,y) == 2 && tipoPar(a,b) == 2 && tipoPar(c,d) == 2 = "X" ++ " " ++ "X" ++ " " ++ "X"
-  | tipoPar(x,y) == 2 && tipoPar(a,b) == 2 = "X" ++ " " ++ "X" ++ " " ++ show c
-  | tipoPar(x,y) == 2 = "X" ++ " " ++ getSymbol (x,y)
-  | otherwise = getSymbol (x,y) ++ " | " ++ getSymbol (a,b) ++ " | " ++ getSymbol (c,d)
-
--- Calcula os pontos da partida
-getPontos :: [Par] -> Int
-getPontos [] = 0
-getPontos(h:t)
-  | length t == 1 && tipoPar h == 2 = 10 + pontosPar (head t)
-  | length t == 1 && tipoPar h == 1 = 10 + pontosPri (head t)
-  | length t == 2 && tipoPar h == 2 && tipoPar (head t) == 2 = 10 + pontosPri (head t) + pontosPri (head (tail t))
-  | tipoPar h == 2 && tipoPar (head t) == 2 = 10 + pontosPri (head t) + pontosPri (head (tail t)) + getPontos t
-  | tipoPar h == 2 = 10 + pontosPar (head t) + getPontos t
-  | tipoPar h == 1 = 10 + pontosPri (head t) + getPontos t
-  | tipoPar h == -1 = pontosPri h
-  | otherwise = pontosPar h + getPontos t
-
--- Retorna o valor em pontos do par
-pontosPar :: Par -> Int
-pontosPar (x,y) = x + y
-
--- Retorna o valor em pontos do primeiro elemento do par
-pontosPri :: Par -> Int
-pontosPri (x,y) = x
-
--- Retorna um inteiro que representa o tipo do par
-tipoPar :: Par -> Int
-tipoPar (x,y)
-  | y == -1 = -1 -- ponto único
-  | x == 10 = 2 -- strike
-  | x + y == 10 = 1 -- spare
-  | otherwise = 0 -- padrão
-
--- Converte o array de pares em array de strings
-toStringArray :: [Par] -> [String]
-toStringArray [] = []
-toStringArray(h:t)
-  | length t == 2 = [getEndSymbol (h,head t,head (tail t))]
-  | otherwise = getSymbol h : toStringArray t
-
--- Converte o array de strings em uma string
-output :: ([String],Int) -> String
-output (x,y) = concat (intersperse " | " x) ++ " | " ++ show y
+rodadasToString :: [Rodada] -> String
+rodadasToString [] = []
+rodadasToString (h:t)
+  | i h == 10 && jogada1 h == 10 && jogada2 h == 10 && jogada3 h == 10 = "X" ++ " " ++ "X" ++ " " ++ "X" ++ " | "
+  | i h == 10 && jogada1 h == 10 && jogada2 h == 10 = "X" ++ " " ++ "X" ++ " " ++ show (jogada3 h) ++ " | "
+  | i h == 10 && jogada1 h == 10 = "X" ++ " " ++ show (jogada2 h) ++ " " ++ show (jogada3 h) ++ " | "
+  | i h == 10 && jogada1 h + jogada2 h == 10 && jogada3 h == 10 = show (jogada1 h) ++ " /" ++ " " ++ "X" ++ " | "
+  | i h == 10 && jogada1 h + jogada2 h == 10 = show (jogada1 h) ++ " /" ++ " " ++ show (jogada3 h) ++ " | "
+  | jogada1 h == 10 = "X _" ++ " | " ++ rodadasToString t
+  | jogada1 h + jogada2 h == 10 = show (jogada1 h) ++ " /" ++ " | " ++ rodadasToString t
+  | otherwise = show (jogada1 h) ++ " " ++ show (jogada2 h) ++ " | " ++ rodadasToString t
 
 -- main é uma função imperativa
 main = do
@@ -79,15 +47,11 @@ main = do
   -- Transforma o input em um array
   let pontos = map read (words input) :: [Int]
 
-  -- Agrupa as rodadas em pares
-  let rodadas = splitPares pontos
+  -- Dividi o input em rodadas
+  let rodadas = splitRodadas (pontos,1)
 
-  -- Converte o array de pares em um array de strings
-  let y = toStringArray rodadas
+  -- Gera o output e junta aos pontos
+  let output = rodadasToString rodadas ++ show (somaPontos rodadas)
 
-  -- Calcula o número de pontos da partida com base no vetor de rodadas (getPontos)
-  -- Pega o array de strings e transforma em string (output)
-  -- Junta o array de strings com a pontuação (output)
-  -- Imprime a string (putStrLn)
-  putStrLn (output((y,getPontos rodadas)))
-
+  -- Imprime o output
+  putStrLn output
