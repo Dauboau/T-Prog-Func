@@ -13,6 +13,7 @@ data Rodada = Rodada {
 
 -- Separa as rodadas em um array
 splitRodadas :: ([Int],Int) -> [Rodada]
+splitRodadas ([],i) = []
 splitRodadas (h:t,i)
   | i == 10 && length t == 2 = [Rodada{i=i,jogada1 = h,jogada2 = head t,jogada3 = head (tail t),pontos = h + head t + head (tail t)}] -- última rodada (tripla)
   | i == 10 = [Rodada{i=i,jogada1 = h,jogada2 = head t,jogada3 = -1,pontos = h + head t}] -- última rodada (dupla)
